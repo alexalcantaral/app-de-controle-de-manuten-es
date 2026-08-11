@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAuth } from "../../contexts/AuthContext";
@@ -15,7 +8,7 @@ import { InstituicaoEnsino } from "../../types";
 import { cargoTheme, colors, radius, shadow, spacing } from "../../theme";
 import { Avatar, Etiqueta } from "../../components";
 import { formatarData } from "../../utils/formatadores";
-import { API_HOST } from "../../config/env";
+import { API_HOST } from "../../../config/env";
 
 export const PerfilScreen = () => {
   const { usuario, logout } = useAuth();
@@ -44,12 +37,7 @@ export const PerfilScreen = () => {
   return (
     <ScrollView style={styles.tela} contentContainerStyle={{ paddingBottom: 48 }}>
       <View style={styles.cabecalho}>
-        <Avatar
-          nome={usuario.nome}
-          tamanho={92}
-          cor={colors.primary}
-          fundo="#FFFFFF"
-        />
+        <Avatar nome={usuario.nome} tamanho={92} cor={colors.primary} fundo="#FFFFFF" />
         <Text style={styles.nome}>{usuario.nome}</Text>
         <Text style={styles.email}>{usuario.email}</Text>
         <View style={{ marginTop: spacing.sm }}>
@@ -62,22 +50,10 @@ export const PerfilScreen = () => {
         <LinhaInfo
           icone="school-outline"
           rotulo="Instituição"
-          valor={
-            usuario.instituicaoId
-              ? instituicao?.nome ?? `#${usuario.instituicaoId}`
-              : "Sem vínculo"
-          }
+          valor={usuario.instituicaoId ? (instituicao?.nome ?? `#${usuario.instituicaoId}`) : "Sem vínculo"}
         />
-        <LinhaInfo
-          icone="shield-checkmark-outline"
-          rotulo="Situação"
-          valor={usuario.ativo ? "Ativo" : "Inativo"}
-        />
-        <LinhaInfo
-          icone="calendar-outline"
-          rotulo="Cadastro"
-          valor={formatarData(usuario.createdAt)}
-        />
+        <LinhaInfo icone="shield-checkmark-outline" rotulo="Situação" valor={usuario.ativo ? "Ativo" : "Inativo"} />
+        <LinhaInfo icone="calendar-outline" rotulo="Cadastro" valor={formatarData(usuario.createdAt)} />
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(180)} style={styles.cartao}>

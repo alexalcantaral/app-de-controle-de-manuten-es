@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { API_URL } from "../config/env";
+import { API_URL } from "../../config/env";
 import { TokensAutenticacao } from "../types";
 import { storage } from "./storage";
 
@@ -31,10 +31,9 @@ api.interceptors.request.use((config) => {
 let promessaRefresh: Promise<TokensAutenticacao> | null = null;
 
 const atualizarTokens = async (): Promise<TokensAutenticacao> => {
-  const { data } = await axios.post<TokensAutenticacao>(
-    `${API_URL}/auth/atualizar-token`,
-    { refresh: tokensAtuais?.refresh }
-  );
+  const { data } = await axios.post<TokensAutenticacao>(`${API_URL}/auth/atualizar-token`, {
+    refresh: tokensAtuais?.refresh,
+  });
   return data;
 };
 
@@ -73,15 +72,13 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 /** Extrai uma mensagem legível de um erro de requisição da API. */
 export const extrairMensagemErro = (erro: unknown): string => {
   if (axios.isAxiosError(erro)) {
-    const dados = erro.response?.data as
-      | { message?: string; error?: string }
-      | undefined;
+    const dados = erro.response?.data as { message?: string; error?: string } | undefined;
     if (dados?.message) return dados.message;
     if (dados?.error) return dados.error;
     if (erro.code === "ECONNABORTED" || erro.message === "Network Error") {
