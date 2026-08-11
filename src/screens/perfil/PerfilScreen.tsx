@@ -1,18 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAuth } from "../../contexts/AuthContext";
 import { instituicaoService } from "../../services/instituicao.service";
 import { InstituicaoEnsino } from "../../types";
 import { cargoTheme, colors, radius, shadow, spacing } from "../../theme";
-import { Avatar, Etiqueta } from "../../components";
+import { Avatar, ConfirmDialog, Etiqueta } from "../../components";
 import { formatarData } from "../../utils/formatadores";
 import { API_HOST } from "../../../config/env";
 
 export const PerfilScreen = () => {
   const { usuario, logout } = useAuth();
   const [instituicao, setInstituicao] = useState<InstituicaoEnsino | null>(null);
+  const [confirmandoSaida, setConfirmandoSaida] = useState(false);
 
   useEffect(() => {
     if (usuario?.instituicaoId) {
@@ -27,17 +34,17 @@ export const PerfilScreen = () => {
 
   const tema = cargoTheme[usuario.cargo];
 
-  const confirmarSaida = () => {
-    Alert.alert("Sair", "Deseja encerrar a sessão neste aparelho?", [
-      { text: "Ficar", style: "cancel" },
-      { text: "Sair", style: "destructive", onPress: logout },
-    ]);
-  };
+  const confirmarSaida = () => setConfirmandoSaida(true);
 
   return (
     <ScrollView style={styles.tela} contentContainerStyle={{ paddingBottom: 48 }}>
       <View style={styles.cabecalho}>
-        <Avatar nome={usuario.nome} tamanho={92} cor={colors.primary} fundo="#FFFFFF" />
+        <Avatar
+          nome={usuario.nome}
+          tamanho={92}
+          cor={colors.primary}
+          fundo="#FFFFFF"
+        />
         <Text style={styles.nome}>{usuario.nome}</Text>
         <Text style={styles.email}>{usuario.email}</Text>
         <View style={{ marginTop: spacing.sm }}>
@@ -50,10 +57,22 @@ export const PerfilScreen = () => {
         <LinhaInfo
           icone="school-outline"
           rotulo="Instituição"
-          valor={usuario.instituicaoId ? (instituicao?.nome ?? `#${usuario.instituicaoId}`) : "Sem vínculo"}
+          valor={
+            usuario.instituicaoId
+              ? instituicao?.nome ?? `#${usuario.instituicaoId}`
+              : "Sem vínculo"
+          }
         />
-        <LinhaInfo icone="shield-checkmark-outline" rotulo="Situação" valor={usuario.ativo ? "Ativo" : "Inativo"} />
-        <LinhaInfo icone="calendar-outline" rotulo="Cadastro" valor={formatarData(usuario.createdAt)} />
+        <LinhaInfo
+          icone="shield-checkmark-outline"
+          rotulo="Situação"
+          valor={usuario.ativo ? "Ativo" : "Inativo"}
+        />
+        <LinhaInfo
+          icone="calendar-outline"
+          rotulo="Cadastro"
+          valor={formatarData(usuario.createdAt)}
+        />
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(180)} style={styles.cartao}>
@@ -90,6 +109,19 @@ export const PerfilScreen = () => {
         <Ionicons name="log-out-outline" size={20} color={colors.danger} />
         <Text style={styles.textoSair}>Sair da conta</Text>
       </TouchableOpacity>
+
+      <ConfirmDialog
+        visivel={confirmandoSaida}
+        titulo="Sair"
+        mensagem="Deseja encerrar a sessão neste aparelho?"
+        rotuloConfirmar="Sair"
+        destrutivo
+        aoConfirmar={() => {
+          setConfirmandoSaida(false);
+          logout();
+        }}
+        aoFechar={() => setConfirmandoSaida(false)}
+      />
     </ScrollView>
   );
 };

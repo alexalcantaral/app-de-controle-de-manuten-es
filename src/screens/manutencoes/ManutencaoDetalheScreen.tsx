@@ -32,6 +32,7 @@ import {
   Botao,
   CampoTexto,
   Carregando,
+  ConfirmDialog,
   Etiqueta,
   VisualizadorImagem,
 } from "../../components";
@@ -61,6 +62,12 @@ export const ManutencaoDetalheScreen = ({
   const [processando, setProcessando] = useState(false);
   const [imagemAberta, setImagemAberta] = useState<ImagemManutencao | null>(null);
   const [modalConcluir, setModalConcluir] = useState(false);
+  const [dialogoConfirmacao, setDialogoConfirmacao] = useState<{
+    titulo: string;
+    mensagem: string;
+    rotuloConfirmar: string;
+    aoConfirmar: () => void;
+  } | null>(null);
 
   const { control, handleSubmit, reset } = useForm<DadosConcluir>({
     resolver: zodResolver(esquemaConcluir),
@@ -144,21 +151,20 @@ export const ManutencaoDetalheScreen = ({
 
   const confirmarRemocaoImagem = (imagem: ImagemManutencao) => {
     if (!podeGerenciarImagens) return;
-    Alert.alert("Remover imagem", "Deseja remover esta imagem da manutenção?", [
-      { text: "Manter", style: "cancel" },
-      {
-        text: "Remover",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await imagemService.deletar(imagem.id);
-            setImagens((atuais) => atuais.filter((i) => i.id !== imagem.id));
-          } catch (e) {
-            Alert.alert("Erro", extrairMensagemErro(e));
-          }
-        },
+    setDialogoConfirmacao({
+      titulo: "Remover imagem",
+      mensagem: "Deseja remover esta imagem da manutenção?",
+      rotuloConfirmar: "Remover",
+      aoConfirmar: async () => {
+        setDialogoConfirmacao(null);
+        try {
+          await imagemService.deletar(imagem.id);
+          setImagens((atuais) => atuais.filter((i) => i.id !== imagem.id));
+        } catch (e) {
+          Alert.alert("Erro", extrairMensagemErro(e));
+        }
       },
-    ]);
+    });
   };
 
   const executarAcao = async (acao: () => Promise<unknown>, sucesso: string) => {
@@ -184,43 +190,39 @@ export const ManutencaoDetalheScreen = ({
   });
 
   const confirmarCancelamento = () => {
-    Alert.alert("Cancelar manutenção", "Deseja realmente cancelar esta manutenção?", [
-      { text: "Voltar", style: "cancel" },
-      {
-        text: "Cancelar manutenção",
-        style: "destructive",
-        onPress: () =>
-          executarAcao(
-            () => manutencaoService.cancelar(id),
-            "Manutenção cancelada."
-          ),
+    setDialogoConfirmacao({
+      titulo: "Cancelar manutenção",
+      mensagem: "Deseja realmente cancelar esta manutenção?",
+      rotuloConfirmar: "Cancelar manutenção",
+      aoConfirmar: () => {
+        setDialogoConfirmacao(null);
+        executarAcao(
+          () => manutencaoService.cancelar(id),
+          "Manutenção cancelada."
+        );
       },
-    ]);
+    });
   };
 
   const confirmarExclusao = () => {
-    Alert.alert(
-      "Excluir manutenção",
-      "Esta ação é permanente e removerá também as imagens. Continuar?",
-      [
-        { text: "Voltar", style: "cancel" },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              setProcessando(true);
-              await manutencaoService.deletar(id);
-              navigation.goBack();
-            } catch (e) {
-              Alert.alert("Erro", extrairMensagemErro(e));
-            } finally {
-              setProcessando(false);
-            }
-          },
-        },
-      ]
-    );
+    setDialogoConfirmacao({
+      titulo: "Excluir manutenção",
+      mensagem:
+        "Esta ação é permanente e removerá também as imagens. Continuar?",
+      rotuloConfirmar: "Excluir",
+      aoConfirmar: async () => {
+        setDialogoConfirmacao(null);
+        try {
+          setProcessando(true);
+          await manutencaoService.deletar(id);
+          navigation.goBack();
+        } catch (e) {
+          Alert.alert("Erro", extrairMensagemErro(e));
+        } finally {
+          setProcessando(false);
+        }
+      },
+    });
   };
 
   return (
@@ -404,6 +406,16 @@ export const ManutencaoDetalheScreen = ({
           </View>
         </View>
       </Modal>
+
+      <ConfirmDialog
+        visivel={!!dialogoConfirmacao}
+        titulo={dialogoConfirmacao?.titulo ?? ""}
+        mensagem={dialogoConfirmacao?.mensagem ?? ""}
+        rotuloConfirmar={dialogoConfirmacao?.rotuloConfirmar}
+        destrutivo
+        aoConfirmar={() => dialogoConfirmacao?.aoConfirmar()}
+        aoFechar={() => setDialogoConfirmacao(null)}
+      />
     </ScrollView>
   );
 };
