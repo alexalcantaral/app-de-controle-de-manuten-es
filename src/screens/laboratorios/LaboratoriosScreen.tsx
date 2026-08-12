@@ -20,6 +20,7 @@ import {
   BotaoFlutuante,
   Carregando,
   Cartao,
+  ConfirmDialog,
   ListaVazia,
 } from "../../components";
 import { RootStackParamList } from "../../navigation/types";
@@ -36,6 +37,8 @@ export const LaboratoriosScreen = () => {
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [laboratorioParaExcluir, setLaboratorioParaExcluir] =
+    useState<Laboratorio | null>(null);
 
   const carregar = useCallback(async () => {
     try {
@@ -64,27 +67,21 @@ export const LaboratoriosScreen = () => {
 
   const confirmarExclusao = (laboratorio: Laboratorio) => {
     if (!ehCoordenador) return;
-    Alert.alert(
-      "Excluir laboratório",
-      `Deseja excluir "${laboratorio.nome}"?`,
-      [
-        { text: "Manter", style: "cancel" },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await laboratorioService.deletar(laboratorio.id);
-              setLaboratorios((atuais) =>
-                atuais.filter((l) => l.id !== laboratorio.id)
-              );
-            } catch (e) {
-              Alert.alert("Erro", extrairMensagemErro(e));
-            }
-          },
-        },
-      ]
-    );
+    setLaboratorioParaExcluir(laboratorio);
+  };
+
+  const executarExclusao = async () => {
+    const laboratorio = laboratorioParaExcluir;
+    if (!laboratorio) return;
+    setLaboratorioParaExcluir(null);
+    try {
+      await laboratorioService.deletar(laboratorio.id);
+      setLaboratorios((atuais) =>
+        atuais.filter((l) => l.id !== laboratorio.id)
+      );
+    } catch (e) {
+      Alert.alert("Erro", extrairMensagemErro(e));
+    }
   };
 
   if (carregando) return <Carregando mensagem="Buscando laboratórios..." />;
@@ -176,6 +173,16 @@ export const LaboratoriosScreen = () => {
           onPress={() => navigation.navigate("LaboratorioForm")}
         />
       )}
+
+      <ConfirmDialog
+        visivel={!!laboratorioParaExcluir}
+        titulo="Excluir laboratório"
+        mensagem={`Deseja excluir "${laboratorioParaExcluir?.nome}"?`}
+        rotuloConfirmar="Excluir"
+        destrutivo
+        aoConfirmar={executarExclusao}
+        aoFechar={() => setLaboratorioParaExcluir(null)}
+      />
     </View>
   );
 };

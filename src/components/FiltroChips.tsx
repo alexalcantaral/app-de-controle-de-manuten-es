@@ -23,6 +23,7 @@ export function FiltroChips<V extends string | undefined>({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      style={styles.scroll}
       contentContainerStyle={styles.container}
     >
       {opcoes.map((opcao) => {
@@ -44,7 +45,12 @@ export function FiltroChips<V extends string | undefined>({
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flexGrow: 0,
+  },
   container: {
+    flexGrow: 0,
+    alignItems: "center",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     gap: spacing.sm,

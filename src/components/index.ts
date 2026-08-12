@@ -6,6 +6,7 @@ export { CampoSelecao } from "./CampoSelecao";
 export { CampoData } from "./CampoData";
 export { Cartao } from "./Cartao";
 export { Carregando } from "./Carregando";
+export { ConfirmDialog } from "./ConfirmDialog";
 export { Etiqueta } from "./Etiqueta";
 export { FiltroChips } from "./FiltroChips";
 export { ListaVazia } from "./ListaVazia";
